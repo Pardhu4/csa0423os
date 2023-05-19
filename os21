@@ -1,0 +1,71 @@
+#include <stdio.h>
+#include <stdbool.h>
+typedef struct MemoryBlock {
+    int blockId;
+    int blockSize;
+    bool allocated;
+} MemoryBlock;
+void initializeMemory(MemoryBlock memory[], int numBlocks){
+	int i;
+    for (i = 0; i < numBlocks; i++) {
+        memory[i].blockId = i;
+        memory[i].allocated = false;
+    }
+}
+void displayMemory(MemoryBlock memory[], int numBlocks) {
+	int i;
+    printf("Memory Blocks:\n");
+    for (i = 0; i < numBlocks; i++) {
+        printf("Block %d: Size = %d\tStatus: %s\n", memory[i].blockId, memory[i].blockSize,
+               memory[i].allocated ? "Allocated" : "Free");
+    }
+    printf("\n");
+}
+void allocateMemoryWorstFit(MemoryBlock memory[], int numBlocks, int processId, int blockSize) {
+    int largestBlockIndex = -1;
+    int largestBlockSize = -1;
+    int i;
+    for (i = 0; i < numBlocks; i++) {
+        if (!memory[i].allocated && memory[i].blockSize >= blockSize) {
+            if (memory[i].blockSize > largestBlockSize) {
+                largestBlockIndex = i;
+                largestBlockSize = memory[i].blockSize;
+            }
+        }
+    }
+    if (largestBlockIndex != -1) {
+        memory[largestBlockIndex].allocated = true;
+        memory[largestBlockIndex].blockSize = blockSize;
+        printf("Process %d allocated Block %d of size %d\n", processId, memory[largestBlockIndex].blockId,
+               memory[largestBlockIndex].blockSize);
+    } else {
+        printf("Process %d cannot be allocated\n", processId);
+    }
+}
+void deallocateMemory(MemoryBlock memory[], int numBlocks, int processId) {
+	int i;
+    for ( i = 0; i < numBlocks; i++) {
+        if (memory[i].allocated && memory[i].blockId == processId) {
+            memory[i].allocated = false;
+            printf("Block %d deallocated\n", memory[i].blockId);
+            return;
+        }
+    }
+    printf("Block %d not found or already deallocated\n", processId);
+}
+
+int main() {
+    const int NUM_BLOCKS = 10;
+    MemoryBlock memory[NUM_BLOCKS];
+    initializeMemory(memory, NUM_BLOCKS);
+    displayMemory(memory, NUM_BLOCKS);
+    allocateMemoryWorstFit(memory, NUM_BLOCKS, 0, 4);
+    allocateMemoryWorstFit(memory, NUM_BLOCKS, 1, 2);
+    allocateMemoryWorstFit(memory, NUM_BLOCKS, 2, 6);
+    displayMemory(memory, NUM_BLOCKS);
+    deallocateMemory(memory, NUM_BLOCKS, 0);
+    displayMemory(memory, NUM_BLOCKS);
+    allocateMemoryWorstFit(memory, NUM_BLOCKS, 3, 8);
+    displayMemory(memory, NUM_BLOCKS);
+    return 0;
+}
